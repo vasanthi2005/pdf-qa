@@ -24,12 +24,25 @@ def chunk_text(text, size=1500):
         start = start + size
     return chunks
 
+def embed(text):
+    result=client.models.embed_content(
+        model="gemini-embedding-001",
+        contents=text
+    )
+    return result.embeddings[0].values
 
 def main():
     filename = sys.argv[1]
     text = extract_text(filename)
     chunks = chunk_text(text)
     print(len(chunks))
+
+    vectors=[]
+    for chunk in chunks:
+        vectors.append(embed(chunk))
+        
+    print(len(vectors))
+    print(vectors[0])
 
 
 main()
