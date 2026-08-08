@@ -61,5 +61,4 @@ nothing; embeddings find the meaning. That's the whole reason for the
 vector machinery.
 
 **NumPy** — `np.dot()` and `np.linalg.norm()` do these operations
-across all 3072 numbers in one call. `linalg` = linear algebra. Doing
-it with Python loops would be much slower.
+across all 3072 numbers in one call. `linalg` = linear algebra. Doing it with Python loops would be much slower.
