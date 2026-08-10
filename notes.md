@@ -62,3 +62,71 @@ vector machinery.
 
 **NumPy** — `np.dot()` and `np.linalg.norm()` do these operations
 across all 3072 numbers in one call. `linalg` = linear algebra. Doing it with Python loops would be much slower.
+
+## Retrieval (RAG)
+
+**The full chain** — chunk the document, embed each chunk, embed the
+question, score the question against every chunk vector, take the top
+n, send those chunks plus the question to the model.
+
+**retrieve()**
+
+    def retrieve(question, chunks, vectors, top_n=3):
+        q_vector = embed(question)          # question must be embedded first
+        scores = []
+        for i in range(len(vectors)):
+            scores.append((similarity(q_vector, vectors[i]), i))
+        scores.sort(reverse=True)
+        return [(chunks[i], score) for score, i in scores[:top_n]]
+
+- `scores` is a list of TUPLES: (score, index). Pairing them means the
+  index travels with its score through the sort — otherwise sorting
+  destroys the link between a score and the chunk that produced it
+- score goes FIRST in the tuple because sort compares element 0
+- `scores[:top_n]` = slicing, same as text[:500]
+- `for score, i in ...` = tuple unpacking, splits each pair into two names
+- `top_n=3` is a default parameter — configurable without editing the code
+
+**answer()** — joins the retrieved chunks into one context block, then
+one API call. Prompt must instruct "say so if the answer isn't in the
+context", because RAG ALWAYS returns something — there is no "not found".
+Without that instruction the model answers confidently from irrelevant text.
+
+## Diagnostics — what I actually learned
+
+**Score spread is the signal, not the absolute value.**
+
+- Layout-heavy PDF (tables, columns): 0.614 / 0.586 / 0.582 — a 0.03
+  spread, essentially random. Retrieval found nothing.
+- Prose-heavy PDF: 0.674 / 0.617 / 0.611 — 0.06 spread, correct section
+  ranked first.
+  Scores cluster in a narrow band either way, so never set a fixed
+  threshold like "accept above 0.8". Compare relatively.
+
+**Retrieval quality depends on extraction quality.** Same code, two
+PDFs, completely different results. Broken text -> broken embeddings.
+Tables and multi-column layouts extract as fragments with no sentence
+structure, so their vectors don't resemble a natural-language question.
+
+**Embeddings rank by topic, not by answerhood.** The chunk containing
+the answer (87) ranked 4th at 0.610, while an unrelated chunk about
+intrusion detection scored 0.611. A section HEADING outranked the
+section's actual content, because the heading reads as topically
+relevant. Re-ranking is the proper fix; raising top_n to 5 worked here.
+
+**top_n is a quality lever, not just a setting.** 3 missed the answer,
+5 found it. But more chunks = more irrelevant text in the prompt, so
+it's a tradeoff, not a free win.
+
+**Chunk boundaries cost answers.** The 1500-char cut split section 6's
+heading from its content. Overlap (start = start + size - 200) makes
+chunks share text with their neighbours so boundary information appears
+in both. Not implemented.
+
+## Gotchas hit
+
+- `scores.append(score, i)` fails — append takes ONE argument. Wrap in
+  an extra pair of brackets to make it one tuple: `append((score, i))`
+- `q_vector = question` passes a STRING into similarity(). numpy error
+  `dtype('<U32')` means text where numbers were expected — always a
+  sign something wasn't embedded
