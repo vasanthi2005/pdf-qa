@@ -1,12 +1,11 @@
 import os
 import streamlit as st
-from dotenv import load_dotenv
 from google import genai
 from pypdf import PdfReader
 import numpy as np
 
-load_dotenv()
-client = genai.Client(api_key=os.getenv("GOOGLE_API_KEY"))
+
+client = genai.Client(api_key=st.secrets["GOOGLE_API_KEY"])
 
 
 def retrieve(question,chunks,vectors,top_n=5):
