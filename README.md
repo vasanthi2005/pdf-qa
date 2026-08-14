@@ -4,6 +4,10 @@ Ask questions about a PDF and get answers grounded in its content.
 A minimal retrieval-augmented generation (RAG) pipeline built with
 Python and the Google Gemini API.
 
+**Live demo:** https://pdf-app-jdzskybdpbaxamftmixvp3.streamlit.app/
+
+_(Free hosting — the app sleeps when idle and takes ~30 seconds to wake.)_
+
 ## Requirements
 
 1. Chunks get embedded and stored
@@ -92,3 +96,7 @@ wasteful for repeated use.
   the question rather than merely relating to it
 - Take the question as a command-line argument
 - Batch the embedding calls instead of one request per chunk
+
+## LIVE DEMO
+
+https://pdf-app-jdzskybdpbaxamftmixvp3.streamlit.app/
