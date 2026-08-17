@@ -94,9 +94,4 @@ wasteful for repeated use.
 - Persist vectors in a vector database (ChromaDB) instead of two parallel lists
 - Add re-ranking — a second pass scoring chunks on whether they answer
   the question rather than merely relating to it
-- Take the question as a command-line argument
 - Batch the embedding calls instead of one request per chunk
-
-## LIVE DEMO
-
-https://pdf-app-jdzskybdpbaxamftmixvp3.streamlit.app/
