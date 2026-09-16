@@ -2,6 +2,7 @@ import os
 import streamlit as st
 from google import genai
 from pypdf import PdfReader
+from google.genai import errors
 import numpy as np
 
 
@@ -21,7 +22,7 @@ def retrieve(question,chunks,vectors,top_n=5):
 def answer(question,retrieved):
     context="\n\n".join([chunk for chunk,score in retrieved])
     response=client.models.generate_content(
-        model="gemini-flash-latest",
+        model="gemini-2.5-flash",
         contents=f"Answer the question using only the context below. If the context doesn't contain the answer, say so.\n\nContext:\n{context}\n\nQuestion: {question}"
     )
     return response.text
@@ -71,4 +72,7 @@ if st.button("Answer"):
 
         result = retrieve(question, chunks, vectors, top_n=5)
         
+try:
     st.write(answer(question, result))
+except errors.ServerError:
+    st.warning("Gemini is busy right now. Please try again in a minute.")
