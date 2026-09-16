@@ -4,7 +4,7 @@ Ask questions about a PDF and get answers grounded in its content.
 A minimal retrieval-augmented generation (RAG) pipeline built with
 Python and the Google Gemini API.
 
-**Live demo:** https://pdf-app-jdzskybdpbaxamftmixvp3.streamlit.app/
+**Live demo:** https://pdf-ans.streamlit.app/
 
 _(Free hosting — the app sleeps when idle and takes ~30 seconds to wake.)_
 
@@ -73,6 +73,23 @@ relevant but containing no numbers. The chunk holding the actual answer
 ranked 4th at 0.610, below an unrelated chunk at 0.611. Raising
 `top_n` from 3 to 5 produced the correct answer.
 
+**Chunk overlap did not help.** I hypothesised that the answer chunk ranked
+poorly because a 1,500-character cut split section headings from their content,
+so I added 200-character overlap between chunks and re-measured with the same
+question and document.
+
+|                  | Top 3 scores          | Answer chunk  |
+| ---------------- | --------------------- | ------------- |
+| No overlap       | 0.674 / 0.617 / 0.611 | rank 4, 0.610 |
+| 200-char overlap | 0.657 / 0.616 / 0.612 | rank 4, 0.610 |
+
+No improvement, and the top score fell slightly. This ruled out chunk
+boundaries as the cause and confirmed the topical-ranking problem instead: the
+top-scoring chunk contains the phrase "gauge the prediction accuracy of its
+machine learning models" but no figure, while the chunk stating 87 never uses
+the word "accuracy" near it. Re-ranking or hybrid keyword search would be the
+appropriate fix, not different chunking.
+
 ## Limitations
 
 **No "not found" signal.** Retrieval always returns its top n chunks
@@ -90,7 +107,6 @@ wasteful for repeated use.
 
 ## Possible improvements
 
-- Overlap chunks by ~200 characters so boundary information appears in both
 - Persist vectors in a vector database (ChromaDB) instead of two parallel lists
 - Add re-ranking — a second pass scoring chunks on whether they answer
   the question rather than merely relating to it
