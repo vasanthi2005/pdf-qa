@@ -22,7 +22,7 @@ def retrieve(question,chunks,vectors,top_n=5):
 def answer(question,retrieved):
     context="\n\n".join([chunk for chunk,score in retrieved])
     response=client.models.generate_content(
-        model="gemini-2.5-flash",
+        model="gemini-flash-latest",
         contents=f"Answer the question using only the context below. If the context doesn't contain the answer, say so.\n\nContext:\n{context}\n\nQuestion: {question}"
     )
     return response.text
@@ -74,5 +74,5 @@ if st.button("Answer"):
         
     try:
         st.write(answer(question, result))
-    except errors.ServerError:
-        st.warning("Gemini is busy right now. Please try again in a minute.")
+    except errors.APIError as e:
+        st.warning(f"Gemini couldn't answer right now (error {e.code}). Please try again in a minute.")
