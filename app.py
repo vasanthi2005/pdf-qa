@@ -72,7 +72,7 @@ if st.button("Answer"):
 
         result = retrieve(question, chunks, vectors, top_n=5)
         
-try:
-    st.write(answer(question, result))
-except errors.ServerError:
-    st.warning("Gemini is busy right now. Please try again in a minute.")
+    try:
+        st.write(answer(question, result))
+    except errors.ServerError:
+        st.warning("Gemini is busy right now. Please try again in a minute.")
